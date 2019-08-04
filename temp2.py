@@ -18,36 +18,35 @@ def main():
     
 def my_callback(pin):
 
-	if pin == 18:
+	if pin == 18:		#button 2 counts up
 		count_up
-	else if pin == 16:
-		count_down
+	else if pin == 16:		#button 1 counts down
+		count_down	
 
-	#display binary digit
 
+	outputs = [(0,0,0), (0,0,1),(0,1,0),(0,1,1),(1,0,0),(1,0,1),(1,1,0),(1,1,1)]
+	GPIO.output(11, outputs[count][0])  #set state of led1
+    GPIO.output(13, outputs[count][1])  #set state of led2
+    GPIO.output(15, outputs[count][2])  #set state of led3
+	
 	return
 
 def count_up():
 	count += 1
 
-	if count == 9:
-		count = 0
-	#convert decimal to binary
-	bin_count = bin(count)
+	if count == 8:
+		count = 0			#counter goes back to zero after 8
 	
 
 def count_up():
 	count -= 1
 
 	if count < 0:
-		count = 8
-		
-	bin_count = bin(count)
+		count = 8			#counter wraps around and goes to 8 after 0
 
 
-
-GPIO.add_event_detect(16, GPIO.RISING, callback=my_callback,bouncetime=300)
-GPIO.add_event_detect(18, GPIO.RISING, callback=my_callback,bouncetime=300)
+GPIO.add_event_detect(16, GPIO.RISING, callback=my_callback,bouncetime=300)  #interrupt for button 1
+GPIO.add_event_detect(18, GPIO.RISING, callback=my_callback,bouncetime=300)  #interrupt for button 2
 # Only run the functions if 
 if __name__ == "__main__":
     # Make sure the GPIO is stopped correctly
