@@ -90,7 +90,7 @@ int main(void){
 		//Fetch the time from the RTC
 		hours = hexCompensation(wiringPiI2CReadReg8(RTC, HOUR));
 		mins = hexCompensation(wiringPiI2CReadReg8 (RTC, MIN));
-		secs = hexCompensation(wiringPiI2CReadReg8 (RTC, SECS)-0x80);
+		secs = hexCompensation(wiringPiI2CReadReg8 (RTC, SECS)-0x80); //removes the extra bit that enables the seconds register
 		
 		//Function calls to toggle LEDs
 		lightHours(hours);
