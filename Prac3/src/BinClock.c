@@ -27,9 +27,9 @@ int hoursList[8], minsList[7];
 void initGPIO(void){
 	
 	printf("Setting up\n");
-	wiringPiSetup(); //This is the default mode. If you want to change pinouts, be aware
+	wiringPiSetup(); //This is the default mode. 
 	
-	cleanUp();
+	cleanUp(); //resets pins to avoid writing to the same hardware multiple times
 
 	RTC = wiringPiI2CSetup(RTCAddr); //Set up the RTC
 	
@@ -58,7 +58,7 @@ void cleanUp (void){
 
 	for(int i = 0; i<sizeof(LEDS); i++){
 		digitalWrite(LEDS[i], 0);
-		//pinMode(LEDS[i], INPUT);
+	
 	}
 }
 
@@ -73,16 +73,16 @@ int main(void){
 	//Set random time (3:04PM)
 	wiringPiI2CWriteReg8(RTC, HOUR, 0x12+TIMEZONE);
 	wiringPiI2CWriteReg8(RTC, MIN,0x4);
-	wiringPiI2CWriteReg8(RTC, SEC, 0x80 ); 
+	wiringPiI2CWriteReg8(RTC, SEC, 0x80 ); // activates the RTC to starts counting
 	
 	
 
 	if (wiringPiISR (BTNS[0], INT_EDGE_FALLING, &hourInc) < 0){ //increase hours
-		fprintf(stderr, "Unable to do stuff" );
+		fprintf(stderr, "Cannot increase hours" );
 		return 1;
 	}
 	if (wiringPiISR (BTNS[1], INT_EDGE_FALLING, &minInc) < 0){ //increase minutes
-		fprintf(stderr, "Cannot do stuff");
+		fprintf(stderr, "Cannot inrcrease minutes");
 		return 1;
 	}
 	// Repeat this until we shut down
@@ -95,9 +95,11 @@ int main(void){
 		//Function calls to toggle LEDs
 		lightHours(hours);
 		lightMins(mins);
+		secPWM(secs);
 		
 		// Print out the time we have stored on our RTC
-		//printf("The current time is: %dh:%dm",hours, mins);
+		printf("The current time is: %dh:%dm",hours, mins);
+
 		//using a delay to make our program "less CPU hungry"
 		delay(1000); //milliseconds
 	}
@@ -173,13 +175,12 @@ int decCompensation(int units){
 void lightHours(int units){
 	// Write your logic to light up the hour LEDs here	
 
-    int_to_bin_digit(units, 8, hoursList);		//Pass hours to be converted to an array of bits
+    int_to_bin_digit(units, 8, hoursList);		//Pass hours to be converted to an array of 8 bits
       
       int loop;
       int i=0;
-	while(i<4){							//
+	while(i<4){							// only writes to the first 4 LEDs in the LED array
  		for(loop = 4; loop < 8; loop++){
-		//printf("LED %d \n", digit[loop]);		//Testing display purpose (REMOVE)
 	  		digitalWrite (LEDS[i], hoursList[loop]) ;	//Write logic to each LED pins 0,2,3,25
 	  		i++;
 		}
@@ -191,13 +192,12 @@ void lightHours(int units){
  */
 void lightMins(int units){
 	//Write your logic to light up the minute LEDs here
-								//Create an array of specified length
-    int_to_bin_digit(units, 7, minsList);		//Pass hours to be converted to an array of bits
+						
+    int_to_bin_digit(units, 7, minsList);		//Pass number of minutes to be converted to an array of 8 bits
       
       int loop;
-      int i=4;								//
+      int i=4;								// starts by writing to the 5th LED in the LED array
    for(loop = 1; loop < 8; loop++){
-      //printf("LED %d \n", digit[loop]);		//Testing display purpose (REMOVE)
 	  digitalWrite (LEDS[i], minsList[loop]) ;	//Write logic to each LED pins 7,22,21,27,4,6 
 	  i++;
 	}
